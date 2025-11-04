@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>GoArtWorlds Topluluk Takvim Planı</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+    .app {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    header h1 {
+      font-size: 1.4rem;
+      margin: 0;
+    }
+    header p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      background: #020617;
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid #1f2937;
+    }
+    .controls label {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      margin-right: 4px;
+    }
+    .controls input[type="date"] {
+      background: #020617;
+      border: 1px solid #374151;
+      border-radius: 8px;
+      padding: 4px 8px;
+      color: #e5e7eb;
+      font-size: 0.9rem;
+    }
+    .controls button {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background: #22c55e;
+      color: #022c22;
+      font-weight: 600;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+    }
+    .controls button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 16px rgba(15,23,42,0.6);
+      background: #16a34a;
+    }
+    .layout {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    @media (max-width: 800px) {
+      .layout {
+        flex-direction: column;
+      }
+    }
+    .list {
+      flex: 1;
+      max-height: 520px;
+      overflow: auto;
+      background: #020617;
+      border-radius: 12px;
+      border: 1px solid #1f2937;
+      padding: 8px;
+    }
+    .detail {
+      flex: 1.4;
+      background: #020617;
+      border-radius: 12px;
+      border: 1px solid #1f2937;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 260px;
+    }
+    .post-item {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: left;
+      padding: 8px 8px;
+      border-radius: 10px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.12s ease, transform 0.05s ease;
+    }
+    .post-item:hover {
+      background: #0b1120;
+      transform: translateY(-1px);
+    }
+    .post-item.active {
+      background: #111827;
+      border: 1px solid #22c55e;
+    }
+    .post-number {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #a5b4fc;
+      min-width: 40px;
+    }
+    .post-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .post-theme {
+      font-size: 0.85rem;
+    }
+    .post-date {
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+    .detail-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .detail-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+    .badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      background: #020617;
+    }
+    .detail-text {
+      margin-top: 4px;
+      padding-top: 4px;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+      line-height: 1.4;
+    }
+    .detail-actions {
+      margin-top: 6px;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      align-items: center;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+    .ghost-btn {
+      border-radius: 999px;
+      border: 1px solid #4b5563;
+      background: transparent;
+      color: #e5e7eb;
+      padding: 4px 10px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .ghost-btn:hover {
+      background: #111827;
+    }
+    .status-msg {
+      min-height: 1em;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>GoArtWorlds Telegram Paylaşım Takvimi</h1>
+      <p>2 ay boyunca 2 günde bir yapılacak 30 paylaşımın metinlerini burada takip edebilirsin. Tarih seçersen, takvim gerçek tarihlerle güncellenir.</p>
+    </header>
+
+    <div class="controls">
+      <label for="startDate">Başlangıç günü:</label>
+      <input type="date" id="startDate" />
+      <button type="button" id="applyDate">Tarihi uygula</button>
+      <span style="font-size:0.8rem; color:#9ca3af;">(Paylaşım #1'in yapılacağı günü seç)</span>
+    </div>
+
+    <div class="layout">
+      <div class="list" id="postList"></div>
+      <div class="detail">
+        <div class="detail-title" id="detailTitle"></div>
+        <div class="detail-meta">
+          <span class="badge" id="detailTheme"></span>
+          <span class="badge" id="detailDay"></span>
+          <span class="badge" id="detailDate"></span>
+        </div>
+        <div class="detail-text" id="detailText"></div>
+        <div class="detail-actions">
+          <div class="status-msg" id="statusMsg"></div>
+          <button class="ghost-btn" type="button" id="copyBtn">Metni kopyala</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+const posts = [
+  {
+    id: 1,
+    day: 1,
+    offsetDays: 0,
+    theme: '🎮 Oyun Dünyası',
+    title: '🎮 GoArt nedir?',
+    text: `🎮 *GoArt nedir?*
+
+GoArt, gerçek dünyada yürürken portal noktalarına gidip avatarını geliştirdiğin konum tabanlı bir oyun. Telefonundaki haritadan portalları buluyor, içeriklere giriyor, görevler ve etkinliklerle ilerliyorsun.
+Bu seri boyunca oyunun bütün mekaniklerini basit örneklerle anlatacağız; istersen metinleri direkt Telegram kanalından takip edip arkadaşlarına da iletebilirsin.`
+  },
+  {
+    id: 2,
+    day: 3,
+    offsetDays: 2,
+    theme: '🎮 Oyun Dünyası',
+    title: "🎮 GoArt'ın temel oyun döngüsü",
+    text: `🎮 *GoArt'ın temel oyun döngüsü*
+
+GoArt'ta temel döngü çok net: keşfet → kaynak topla → İmalathane'de craft yap → görev ve sezonlarda ilerle → ödül kazan.
+Ne kadar çok keşfe çıkar ve doğru ekipmanla kaynak toplarsan, hem karakterin hem de sezon ilerlemen o kadar hızlanır.
+Bugün oyuna girdiğinde haritaya bir kez bak: Yakınında kaç portal görüyorsun?`
+  },
+  {
+    id: 3,
+    day: 5,
+    offsetDays: 4,
+    theme: '🎮 Oyun Dünyası',
+    title: '🎮 Portallar ve dünyayı keşfetmek',
+    text: `🎮 *Portallar ve dünyayı keşfetmek*
+
+Portallar, gerçek dünyadaki önemli noktaları oyunun içine taşıyan giriş kapılarıdır. Harput Kalesi, Belek Gazi, TFF gibi portallar hem görevlerin hem de keşiflerin merkezinde.
+Bazı görevler senden belirli portallara gitmeni ister, bazıları ise yeni portal keşfetmeni ödüllendirir.
+Bugün oyun içinde daha önce girmediğin bir portala gitmeyi dene ve ekran görüntüsünü toplulukla paylaş.`
+  },
+  {
+    id: 4,
+    day: 7,
+    offsetDays: 6,
+    theme: '⏫ İlerleme Sistemi',
+    title: '⏫ Level sistemi nasıl çalışır?',
+    text: `⏫ *Level sistemi nasıl çalışır?*
+
+GoArt'ta kazandığın her XP seni bir sonraki seviyeye yaklaştırır. Seviye atladığında sadece sayı artmaz; GoGold, GoPoint, kaynak ve bazen de çanta/alet ödülleri alırsın.
+Level sistemi uzun vadeli ilerlemeyi temsil eder; görevler, başarımlar ve etkinliklerle XP kazanırsın.
+Şu an kaçıncı seviyedesin ve bir sonraki seviyeye ne kadar XP kaldı?`
+  },
+  {
+    id: 5,
+    day: 9,
+    offsetDays: 8,
+    theme: '⏫ İlerleme Sistemi',
+    title: '⏫ Kritik seviye eşikleri',
+    text: `⏫ *Kritik seviye eşikleri*
+
+Bazı seviyeler karakterinde gerçek bir sıçrama noktasıdır; bu seviyelerde yeni çantalar veya önemli aletler açarsın.
+Örneğin erken oyun seviyelerinde ilk gelişmiş çantanı alırken, ileride Gezgin/Kılavuz/Mucit gibi daha güçlü çantalara geçersin.
+Kendine küçük hedefler koy: "Şu ekipmanı açana kadar şu levele çıkacağım" diyerek oynadığında ilerlemen çok daha net olur.`
+  },
+  {
+    id: 6,
+    day: 11,
+    offsetDays: 10,
+    theme: '🧭 Görevler (Quests)',
+    title: '🧭 Görev tipleri: GoPack Journey ve Season Quests',
+    text: `🧭 *Görev tipleri: GoPack Journey ve Season Quests*
+
+Oyunda iki ana görev hattı var:
+• *GoPack Journey*: Seni temel mekanikleri öğrenerek GoPack üretimine götüren uzun yolculuk.
+• *Season Quests*: Her sezona özel, süreli görevler; sezon liderlik tablosu ve GoGold ile daha çok bağlantılı.
+Bugün görev ekranına girip aktif Journey ve Season görevlerine bir bak; hangisinde daha ileride olduğunu bizimle paylaş.`
+  },
+  {
+    id: 7,
+    day: 13,
+    offsetDays: 12,
+    theme: '🧭 Görevler (GoPack Journey)',
+    title: "🧭 GoPack Journey'ye giriş",
+    text: `🧭 *GoPack Journey'ye giriş*
+
+GoPack Journey, sıralı görevlerden oluşan ve sonunda sana tamir edilebilir özel çanta GoPack'i kazandıran bir yolculuk.
+Bu görevler seni farklı portallara gönderir, ilk aletlerini ve gelişmiş çantalarını craft ettirir, yani oyunun temel mantığını adım adım öğretir.
+Henüz Journey'e başlamadıysan görev listesinden ilk adıma göz at; başladıysan kaçıncı görevde olduğunu yaz.`
+  },
+  {
+    id: 8,
+    day: 15,
+    offsetDays: 14,
+    theme: '🧭 Görevler (GoPack Journey)',
+    title: '🧭 İlk adımlar: 0–1. görevler',
+    text: `🧭 *İlk adımlar: 0–1. görevler*
+
+Journey'nin en başında basit ama kritik adımlar var: ilk Polimerleri toplar, İmalathane'de ilk Kazma'nı üretir, sonra ilk gelişmiş çantanı açarsın.
+Bu görevler hem kaynak toplama hem de craft ekranını kullanma alışkanlığını kazandırır.
+Eğer oyuna yeni başlayan arkadaşın varsa, ona özellikle bu ilk iki görevi bitirmesini söyle; oyunu anlaması çok hızlanır.`
+  },
+  {
+    id: 9,
+    day: 17,
+    offsetDays: 16,
+    theme: '🧭 Görevler (GoPack Journey)',
+    title: '🧭 Orta Journey görevleri: kaynak çeşitlenmesi',
+    text: `🧭 *Orta Journey görevleri: kaynak çeşitlenmesi*
+
+Journey'nin ortalarına geldiğinde tek bir portal ve kaynağa takılı kalmazsın; farklı portallarda mermer, funda, çalı, demir gibi kaynakları toplamaya başlarsın.
+Bu noktada yeni aletler açılır ve hangi kaynağı hangi aletle toplaman gerektiğini pratikte öğrenirsin.
+Orta görevlerde seni en çok zorlayan kısım ne oldu: kaynak bulmak mı, yoksa dayanıklılığı yetirip run planlamak mı?`
+  },
+  {
+    id: 10,
+    day: 19,
+    offsetDays: 18,
+    theme: '🧭 Görevler (GoPack Journey)',
+    title: "🧭 Son görevler ve GoPack'e giden yol",
+    text: `🧭 *Son görevler ve GoPack'e giden yol*
+
+Journey'nin son kısmında elinde neredeyse tüm alet seti ve güçlü çantalar vardır; son görevler bu seti kullanarak seni GoPack üretimine hazırlar.
+Standart çantalar kırıldığında kaybolurken, GoPack dayanıklılığı sıfırlansa bile onarılabilir ve uzun vadeli ana çantan haline gelir.
+GoPack'i açmış olanlar: Hangi etkinliklerde sana en çok avantaj sağladığını yorumlarda yaz.`
+  },
+  {
+    id: 11,
+    day: 21,
+    offsetDays: 20,
+    theme: '📅 Sezonlar & Season Quests',
+    title: '📅 Seasons nedir?',
+    text: `📅 *Seasons nedir?*
+
+GoArt, belirli tarih aralıklarında çalışan sezonlar üzerinden ilerler. Her sezonda yeni içerikler, görevler ve sezon liderlik tablosu bulunur.
+Sezon boyunca yaptığın aktivitelerden GoGold kazanırsın ve bu, sezon sıralamasındaki yerini belirler.
+Şu anda aktif sezonda hedefin nedir: sadece ödül almak mı, yoksa üst sıralara oynamak mı?`
+  },
+  {
+    id: 12,
+    day: 23,
+    offsetDays: 22,
+    theme: '📅 Sezonlar & Season Quests',
+    title: '📅 Season Quests ile sezonu ilerletmek',
+    text: `📅 *Season Quests ile sezonu ilerletmek*
+
+Season Quests, sadece ilgili sezon boyunca açık olan süreli görevlerdir. Genelde sezonun özel portallarına gitmeni ve belirli aktiviteleri yapmanı isterler.
+Bu görevlerden hem ödül alırsın hem de GoGold biriktirerek sezon liderlik tablosunda yukarı tırmanırsın.
+Season Quest ekranına bugün bir bak; listenin en üstündeki görevi bitirip ekran görüntüsünü toplulukla paylaşmayı dene.`
+  },
+  {
+    id: 13,
+    day: 25,
+    offsetDays: 24,
+    theme: '🏅 Başarımlar',
+    title: '🏅 Başarımlar nasıl çalışır?',
+    text: `🏅 *Başarımlar nasıl çalışır?*
+
+Başarımlar; görev tamamlama, çanta/alet üretme, yeni portal keşfetme, airdrop etkinliklerine katılma gibi aksiyonlar için ekstra hedefler tanımlar.
+Her başarım için bir hedef ve karşılığında genelde GoGold + XP ödülü vardır; bu da hem seviye hem sezon ilerleyişini hızlandırır.
+Başarımlar sayfasına girip en yakın olduğun 1–2 taneyi seç; bugün oyun oynarken sadece onları tamamlamaya odaklanmayı deneyebilirsin.`
+  },
+  {
+    id: 14,
+    day: 27,
+    offsetDays: 26,
+    theme: '🏅 Başarımlar',
+    title: '🏅 Örnek başarımlar ve davranışları',
+    text: `🏅 *Örnek başarımlar ve davranışları*
+
+Bazı başarımlar seni daha fazla görev yapmaya yönlendirir; bazıları ise İmalathane'yi kullanmanı veya yeni portal keşfetmeni teşvik eder.
+Airdrop katılımı ve kazanımı ile ilgili başarımlar da var; böylece etkinliklere girmen hem ödül hem ek GoGold/XP sağlar.
+En sevdiğin veya seni en çok zorlayan başarımları bizimle paylaş; ileride bu listeye oyuncu önerilerinden yeni başarımlar ekleyebiliriz.`
+  },
+  {
+    id: 15,
+    day: 29,
+    offsetDays: 28,
+    theme: '🌿 Kaynaklar (Node)',
+    title: '🌿 Toplanabilir kaynaklara giriş',
+    text: `🌿 *Toplanabilir kaynaklara giriş*
+
+Haritada gördüğün nodlar; lif, polimer, kaya, misk otu, mermer, funda, çalı, demir, atalar ağacı, yakut gibi farklı kaynaklar verir.
+Bazıları alet istemeden toplanırken, bazıları için doğru alete ve güçlü bir çantaya ihtiyacın vardır.
+Bugün sadece "hiç toplamamış olduğun" bir kaynağı bulup toplamak için mini bir görev oluştur; bulursan ekran görüntüsünü paylaş.`
+  },
+  {
+    id: 16,
+    day: 31,
+    offsetDays: 30,
+    theme: '🌿 Kaynaklar (Node)',
+    title: '🌿 Hangi kaynağa hangi alet?',
+    text: `🌿 *Hangi kaynağa hangi alet?*
+
+Her kaynak aynı değil; örneğin kaya için Kazma, bitkisel kaynaklar için Bıçak/Hançer/Tırpan, demir için Kürek, atalar ağacı için Uzun Saplı Balta, yakut için Çekiç kullanırsın.
+Yanlış aletle gittiğinde nodu hiç toplayamazsın; doğru aletle ise hızlıca toplar ama çantanın dayanıklılığından harcarsın.
+Kendi kendine küçük bir test yap: envanterine bakıp hangi kaynağa hangi aleti kullanacağını yaz, sonra oyun içinde doğrula.`
+  },
+  {
+    id: 17,
+    day: 33,
+    offsetDays: 32,
+    theme: '⚙️ Crafting / İmalathane',
+    title: '⚙️ İmalathane nedir?',
+    text: `⚙️ *İmalathane nedir?*
+
+İmalathane, topladığın kaynakları çanta ve aletlere dönüştürdüğün yerdir. Burada doğru kombinasyonlarla yeni ekipmanlar craft edersin.
+Erken oyunda tek bir çantayla idare ederken, İmalathane sayesinde daha büyük çantalara ve daha dayanıklı aletlere geçersin.
+Bugün en az bir craft yapmayı hedefle; ister yeni bir alet üret, ister mevcut çanta zincirinde bir üst seviyeye geç.`
+  },
+  {
+    id: 18,
+    day: 35,
+    offsetDays: 34,
+    theme: '🎒 Çantalar',
+    title: '🎒 Çantalar: ilerleme omurgan',
+    text: `🎒 *Çantalar: ilerleme omurgan*
+
+Muhafız, Gezgin, Kılavuz, Mucit ve GoPack gibi çantalar; hem envanter kapasiteni hem de dayanıklılığını belirler.
+Daha büyük çantalar daha uzun run'lar yapmana, daha çok nod temizlemene ve etkinliklerde daha uzun süre kalmana yardımcı olur.
+En çok kullandığın çantayı ve nedenini yaz; bu bilgileri ileride dengeleme ve yeni çanta tasarımlarında kullanabiliriz.`
+  },
+  {
+    id: 19,
+    day: 37,
+    offsetDays: 36,
+    theme: '🛠 Aletler',
+    title: '🛠 Aletler: kaynağa açılan anahtarlar',
+    text: `🛠 *Aletler: kaynağa açılan anahtarlar*
+
+Kazma, Bıçak, Keski, Hançer, Tırpan, Kürek, Uzun Saplı Balta ve Çekiç gibi aletler olmadan birçok kaynağa erişemezsin.
+Her aletin hem üretim maliyeti hem de dayanıklılığı farklıdır; bazıları sık, bazıları daha nadir kullanılır.
+En çok eksikliğini hissettiğin alet hangisi? Bugün o aleti craft etmek için gereken kaynakları toparlamaya odaklanabilirsin.`
+  },
+  {
+    id: 20,
+    day: 39,
+    offsetDays: 38,
+    theme: '💥 Dayanıklılık (Durability)',
+    title: '💥 Dayanıklılık sistemi neden önemli?',
+    text: `💥 *Dayanıklılık sistemi neden önemli?*
+
+Her çanta ve aletin belirli bir dayanıklılığı vardır; her topladığın kaynak bu dayanıklılığı yavaş yavaş tüketir.
+Dayanıklılık sıfıra indiğinde standart çantalar ve aletler kırılır ve genelde geri getirilemez; bu yüzden run planlarken bunu hesaba katmak gerekir.
+Oyuna girmeden önce "bugünkü run" için hangi çantayı kullanacağına ve yaklaşık kaç nod temizlemek istediğine karar ver; sonrasında sonucu karşılaştır.`
+  },
+  {
+    id: 21,
+    day: 41,
+    offsetDays: 40,
+    theme: '💥 Dayanıklılık & GoPack',
+    title: '💥 GoPack ve dayanıklılık farkı',
+    text: `💥 *GoPack ve dayanıklılık farkı*
+
+Standart çantalar kırıldığında kaybolur; GoPack ise dayanıklılığı sıfırlansa bile onarılabilen özel bir çantadır.
+Bu yüzden GoPack, uzun vadeli run'lar ve etkinlikler için stratejik bir yatırım gibidir; üretmesi zor, kullanması rahattır.
+GoPack'i kullananlar: Onu hangi durumda yanına alıyorsun, hangi durumda başka çanta tercih ediyorsun? Kendi küçük metanı bizimle paylaş.`
+  },
+  {
+    id: 22,
+    day: 43,
+    offsetDays: 42,
+    theme: '📆 Günlük Giriş Ödülleri',
+    title: '📆 30 günlük giriş ödülleri',
+    text: `📆 *30 günlük giriş ödülleri*
+
+Her gün oyuna girip ödül ekranını açtığında GoGold ve GoPoint kazanırsın; bazı günlerde ekstra çantalar da gelir.
+Özellikle 7, 14, 21 ve 30. günler çanta ödülleriyle öne çıkar; düzenli giriş yapan oyuncu, sadece bu sistemle bile ciddi güçlenir.
+Günlük giriş serini kaç günde bozduğunu hatırlıyor musun? Bugünden itibaren kendine yeni bir 30 günlük seri hedefi koyabilirsin.`
+  },
+  {
+    id: 23,
+    day: 45,
+    offsetDays: 44,
+    theme: '🎁 Level & Başarım Ödülleri',
+    title: '🎁 Level ve başarımlardan gelen ödüller',
+    text: `🎁 *Level ve başarımlardan gelen ödüller*
+
+Seviye atladığında tek kazancın XP değil; GoGold, GoPoint, kaynak ve ekipman da gelir. Başarımlar da ekstra GoGold + XP vererek bu ilerleyişi destekler.
+Bu iki sistem birlikte çalıştığında, görev ve etkinlikleri oynarken pasif olarak da kasılmış olursun.
+Level/başarım ekranlarını bugün bir tarayıp "kolay alınabilir" birkaç ödülü işaretle; oyun sırasında önce onları tamamlamayı dene.`
+  },
+  {
+    id: 24,
+    day: 47,
+    offsetDays: 46,
+    theme: '🎁 Mystery Box',
+    title: '🎁 Mystery Box yapısı',
+    text: `🎁 *Mystery Box yapısı*
+
+Mystery Box'lar farklı nadirlik seviyelerine sahip sandıklardan oluşur; yaygın sandıklar daha sık, efsanevi sandıklar çok daha az düşer.
+Her nadirlik seviyesinin çanta, alet, kaynak ve para (GoGold/GoPoint) tarafında kendi loot havuzu vardır.
+Kutu açarken ekran görüntüsü alıp gel; toplulukta birlikte bakıp "bu drop iyi mi, ortalama mı" değerlendirelim.`
+  },
+  {
+    id: 25,
+    day: 49,
+    offsetDays: 48,
+    theme: '🎁 Mystery Box',
+    title: "🎁 Mystery Box'tan neler çıkabilir?",
+    text: `🎁 *Mystery Box'tan neler çıkabilir?*
+
+Common ve Uncommon sandıklar genelde daha temel kaynaklar, enerji ve giriş seviye ekipmanlar verirken; Rare, Epic ve Legendary sandıklar daha güçlü çanta ve aletler getirebilir.
+Bu kutular, özellikle yeni oyuncu için ekipman ve kaynak stokunu hızlıca yükseltmenin iyi bir yoludur.
+Senin şimdiye kadar açtığın en iyi sandık hangisiydi ve içinden ne çıktı? Hikayeni bizimle paylaş.`
+  },
+  {
+    id: 26,
+    day: 51,
+    offsetDays: 50,
+    theme: '📦 Hazine Paketi',
+    title: '📦 Hazine Paketi: ilk airdrop yardımın',
+    text: `📦 *Hazine Paketi: ilk airdrop yardımın*
+
+Aktif bir airdrop etkinliğine ilk kez katıldığında, tek seferlik bir Hazine Paketi alırsın. İçinde hem çanta hem de temel kaynaklar vardır.
+Bu paket, özellikle etkinlikten gelen oyuncunun hızlıca craft döngüsüne girmesi için tasarlanmıştır.
+Henüz Hazine Paketi almamışsan ilk airdrop etkinliğine göz at; aldıysan paketten çıkanlarla neler craft ettiğini yaz.`
+  },
+  {
+    id: 27,
+    day: 53,
+    offsetDays: 52,
+    theme: '🗺 Treasure Hunts',
+    title: '🗺 Treasure Hunts nedir?',
+    text: `🗺 *Treasure Hunts nedir?*
+
+Treasure Hunts, belirli portallarda sınırlı süre çalışan hazine avı etkinlikleridir. Bu süre içinde portal içindeki görevleri yaparak özel puanlar toplarsın.
+Etkinlik sonunda puanların liderlik tablosunda sıralanır ve en yüksek skorları yapan oyuncular ödül kazanır.
+Haritada aktif bir Treasure Hunt görürsen yanına uğrayıp puanını not al; bir sonraki avda bu skoru geçmeyi hedefleyebilirsin.`
+  },
+  {
+    id: 28,
+    day: 55,
+    offsetDays: 54,
+    theme: '🗺 Treasure Hunts & Meta',
+    title: '🗺 Treasure Hunts ve dayanıklılık metası',
+    text: `🗺 *Treasure Hunts ve dayanıklılık metası*
+
+Yeni sistemde çoğu Treasure Hunt, puan toplarken çanta dayanıklılığını da tüketir; yani "bedava farm" dönemi bitti diyebiliriz.
+Bu yüzden hazine avına girerken hangi çantayı kullanacağın, kaç nod temizlemeyi hedeflediğin ve sonrasında ne kadar dayanıklılık kalmasını istediğin önemli hale geliyor.
+Kendi Treasure Hunt taktiğini yaz: büyük çanta ile tek uzun run mı, yoksa daha küçük çantalarla birkaç kısa run mı?`
+  },
+  {
+    id: 29,
+    day: 57,
+    offsetDays: 56,
+    theme: '🔐 Web3 & Wallet',
+    title: '🔐 Wallet sistemi: neden cüzdan bağlamalısın?',
+    text: `🔐 *Wallet sistemi: neden cüzdan bağlamalısın?*
+
+Wallet, oyun hesabını bir Web3 cüzdanıyla eşleştirmeni sağlar. Birçok sezon ödülü ve bazı etkinlik ödülleri için bağlı cüzdan şarttır.
+Cüzdan bağlayarak kazandığın zincir üstü (on-chain) ödülleri kendi cüzdanına çekebilir, istersen dışarıya transfer edebilirsin.
+Henüz cüzdan bağlamadıysan ayarlara göz at; bağladıysan hangi cüzdanı tercih ettiğini (GoArt Wallet mı, harici mi) bizimle paylaş.`
+  },
+  {
+    id: 30,
+    day: 59,
+    offsetDays: 58,
+    theme: '🔐 Web3 & GoPack NFT + Özet',
+    title: '🔐 GoPack NFT ve 2 aylık serinin özeti',
+    text: `🔐 *GoPack NFT ve 2 aylık serinin özeti*
+
+GoPack, oyunda ürettiğin ama aynı zamanda NFT olarak da saklayabildiğin, onarılabilir özel bir çantadır. Cüzdanına çekip dış dünyaya taşıyabilir, desteklenen pazarlarda listelersin.
+Son 2 ayda bu seride; level sistemi, görevler, başarımlar, kaynaklar, crafting, dayanıklılık, günlük ödüller, Mystery Box, hazine paketi, Treasure Hunts ve Web3 tarafına kadar tüm temel mekanikleri özetledik.
+Bu seriden en çok hangi paylaşım sana yardımcı oldu? Yorumlarda yaz; bir sonraki içerik serisini buna göre planlayalım.`
+  }
+];
+
+    let selectedId = 1;
+    let startDateValue = null; // 'YYYY-MM-DD' string
+
+    function formatDate(offsetDays) {
+      if (!startDateValue) return '';
+      const d = new Date(startDateValue + 'T00:00:00');
+      d.setDate(d.getDate() + offsetDays);
+      return d.toLocaleDateString('tr-TR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    }
+
+    function renderList() {
+      const container = document.getElementById('postList');
+      container.innerHTML = '';
+      posts.forEach(post => {
+        const btn = document.createElement('button');
+        btn.className = 'post-item' + (post.id === selectedId ? ' active' : '');
+        btn.dataset.id = String(post.id);
+
+        const number = document.createElement('div');
+        number.className = 'post-number';
+        number.textContent = '#' + post.id;
+
+        const meta = document.createElement('div');
+        meta.className = 'post-meta';
+
+        const theme = document.createElement('div');
+        theme.className = 'post-theme';
+        theme.textContent = post.theme;
+
+        const dateLabel = document.createElement('div');
+        dateLabel.className = 'post-date';
+        const humanDay = 'Gün ' + post.day;
+        const realDate = formatDate(post.offsetDays);
+        dateLabel.textContent = realDate ? (humanDay + ' • ' + realDate) : humanDay;
+
+        meta.appendChild(theme);
+        meta.appendChild(dateLabel);
+
+        btn.appendChild(number);
+        btn.appendChild(meta);
+
+        btn.addEventListener('click', () => {
+          selectedId = post.id;
+          renderList();
+          renderDetail();
+        });
+
+        container.appendChild(btn);
+      });
+    }
+
+    function renderDetail() {
+      const post = posts.find(p => p.id === selectedId);
+      if (!post) return;
+
+      document.getElementById('detailTitle').textContent = post.title;
+      document.getElementById('detailTheme').textContent = post.theme;
+
+      const humanDay = 'Gün ' + post.day + ' • Paylaşım #' + post.id;
+      document.getElementById('detailDay').textContent = humanDay;
+
+      const realDate = formatDate(post.offsetDays);
+      document.getElementById('detailDate').textContent = realDate ? ('Tarih ' + realDate) : 'Tarih seçilmedi';
+
+      document.getElementById('detailText').textContent = post.text;
+      document.getElementById('statusMsg').textContent = '';
+    }
+
+    document.getElementById('applyDate').addEventListener('click', () => {
+      const input = document.getElementById('startDate');
+      if (!input.value) {
+        startDateValue = null;
+      } else {
+        startDateValue = input.value;
+      }
+      renderList();
+      renderDetail();
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      const post = posts.find(p => p.id === selectedId);
+      const status = document.getElementById('statusMsg');
+      if (!post) return;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(post.text);
+          status.textContent = 'Metin panoya kopyalandı.';
+        } else {
+          const temp = document.createElement('textarea');
+          temp.value = post.text;
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand('copy');
+          document.body.removeChild(temp);
+          status.textContent = 'Metin panoya kopyalandı.';
+        }
+      } catch (e) {
+        status.textContent = 'Kopyalama başarısız oldu.';
+      }
+      setTimeout(() => { status.textContent = ''; }, 2500);
+    });
+
+    renderList();
+    renderDetail();
+  </script>
+</body>
+</html>
